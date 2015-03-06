@@ -168,12 +168,8 @@ public class MySQLDataSource {
 				reconnect();
 			} catch (Exception e) {
 				BungeeLogin.instance.getLogger().severe(e.getMessage());
-				if (Settings.isStopEnabled) {
-					BungeeLogin.instance.getLogger().severe("Can't reconnect to MySQL database... Please check your MySQL informations ! SHUTDOWN...");
-					BungeeLogin.instance.getServer().shutdown();
-				}
-				if (!Settings.isStopEnabled)
-					BungeeLogin.instance.getServer().getPluginManager().disablePlugin(BungeeLogin.instance);
+				BungeeLogin.instance.getLogger().severe("Can't reconnect to MySQL database... Please check your MySQL informations ! SHUTDOWN...");
+				BungeeLogin.instance.shutdown();
 			}
 		}
 		if (con == null)
