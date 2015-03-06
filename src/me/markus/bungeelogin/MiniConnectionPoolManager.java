@@ -288,7 +288,7 @@ public class MiniConnectionPoolManager {
 			return;
 		}
 		if (activeConnections <= 0) {
-			throw new AssertionError("AuthMeDatabaseError");
+			throw new AssertionError("BungeeDatabaseError");
 		}
 		activeConnections--;
 		semaphore.release();
@@ -303,7 +303,7 @@ public class MiniConnectionPoolManager {
 			// and is not currently within a PooledConnection.getConnection() call,
 			// we assume that the connection was active.
 			if (activeConnections <= 0) {
-				throw new AssertionError("AuthMeDatabaseError");
+				throw new AssertionError("BungeeDatabaseError");
 			}
 			activeConnections--;
 			semaphore.release();
@@ -334,13 +334,13 @@ public class MiniConnectionPoolManager {
 
 	private synchronized void assertInnerState() {
 		if (activeConnections < 0) {
-			throw new AssertionError("AuthMeDatabaseError");
+			throw new AssertionError("BungeeDatabaseError");
 		}
 		if (activeConnections + recycledConnections.size() > maxConnections) {
-			throw new AssertionError("AuthMeDatabaseError");
+			throw new AssertionError("BungeeDatabaseError");
 		}
 		if (activeConnections + semaphore.availablePermits() > maxConnections) {
-			throw new AssertionError("AuthMeDatabaseError");
+			throw new AssertionError("BungeeDatabaseError");
 		}
 	}
 

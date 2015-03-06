@@ -19,17 +19,9 @@ public class Settings {
 	public static String getMySQLPassword;
 	public static boolean isStopEnabled;
 	public static String getMySQLColumnName;
-	public static String getMySQLColumnPassword;
 	public static String getMySQLColumnLoginStatus;
-	public static int getMinNickLength;
-	public static int getMaxNickLength;
-	public static String getNickRegex;
-	public static int getWaittimeIncrement;
-	public static int getLoginsPerTenSeconds;
-	public static int getNrAllowedGuests;
-	public static boolean isWhitelisted;
-	public static int getPurgeInterval;
-	public static int getPurgeThreshold;
+	public static String getMySQLColumnPlaytime;
+	
 
 	public static void loadSettings() {
 
@@ -42,17 +34,8 @@ public class Settings {
 		getMySQLPassword = "foobar";
 		isStopEnabled = true;
 		getMySQLColumnName = "username";
-		getMySQLColumnPassword = "password";
 		getMySQLColumnLoginStatus = "loginStatus";
-		getMinNickLength = 3;
-		getMaxNickLength = 20;
-		getNickRegex = "[a-zA-Z0-9_?]*";
-		getLoginsPerTenSeconds = 20;
-		getWaittimeIncrement = 1;
-		getNrAllowedGuests = 30;
-		getPurgeInterval = 60;
-		getPurgeThreshold = 3;
-		isWhitelisted = false;
+		getMySQLColumnPlaytime = "playtime";
 
 		File file = new File(BungeeLogin.instance.getDataFolder(), "config.yml");
 		if (!file.exists())
@@ -68,23 +51,10 @@ public class Settings {
 			getMySQLTablename = yaml.getString("Datasource.mySQLTablename");
 			getMySQLPassword = yaml.getString("Datasource.mySQLPassword");
 			getMySQLColumnName = yaml.getString("Datasource.mySQLColumnName");
-			getMySQLColumnPassword = yaml.getString("Datasource.mySQLColumnPassword");
 			getMySQLColumnLoginStatus = yaml.getString("Datasource.mySQLColumnLoginStatus"); // loginStatus
-
+			getMySQLColumnPlaytime = yaml.getString("Datasource.mySQLColumnPlaytime");
+			
 			isStopEnabled = yaml.getBoolean("Security.SQLProblem.stopServer");
-
-			getMinNickLength = yaml.getInt("restrictions.minNicknameLength");
-			getMaxNickLength = yaml.getInt("restrictions.maxNicknameLength");
-			getNickRegex = yaml.getString("restrictions.allowedChars");
-			getWaittimeIncrement = yaml.getInt("restrictions.waittimeIncrement");
-
-			getLoginsPerTenSeconds = yaml.getInt("antibot.loginsPer10Seconds");
-			getNrAllowedGuests = yaml.getInt("antibot.nrAllowedGuests");
-			
-			getPurgeInterval = yaml.getInt("purge.interval");
-			getPurgeThreshold = yaml.getInt("purge.amountOfLogins");
-			
-			isWhitelisted = yaml.getBoolean("whitelist");
 
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
@@ -106,22 +76,10 @@ public class Settings {
 		yaml.set("Datasource.mySQLTablename", getMySQLTablename);
 		yaml.set("Datasource.mySQLDatabase", getMySQLDatabase);
 		yaml.set("Datasource.mySQLColumnName", getMySQLColumnName);
-		yaml.set("Datasource.mySQLColumnPassword", getMySQLColumnPassword);
-
+		yaml.set("Datasource.mySQLColumnPlaytime", getMySQLColumnPlaytime);
+		
 		yaml.set("Security.SQLProblem.stopServer", isStopEnabled);
 
-		yaml.set("restrictions.minNicknameLength", getMinNickLength);
-		yaml.set("restrictions.maxNicknameLength", getMaxNickLength);
-		yaml.set("restrictions.allowedChars", getNickRegex);
-		yaml.set("restrictions.waittimeIncrement", getWaittimeIncrement);
-
-		yaml.set("antibot.loginsPer10Seconds", getLoginsPerTenSeconds);
-		yaml.set("antibot.nrAllowedGuests", getNrAllowedGuests);
-		
-		yaml.set("purge.interval", getPurgeInterval);
-		yaml.set("purge.amountOfLogins", getPurgeThreshold);
-		
-		yaml.set("whitelist", isWhitelisted);
 
 		try {
 			ConfigurationProvider.getProvider(YamlConfiguration.class).save(yaml, file);

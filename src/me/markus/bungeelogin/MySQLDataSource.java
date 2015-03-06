@@ -19,7 +19,9 @@ public class MySQLDataSource {
 	private String database;
 	private String tableName;
 	private String columnName;
-	private String columnPassword;
+	private String columnLoginstatus;
+	private String columnPlaytime;
+	
 	private MiniConnectionPoolManager conPool;
 
 	public MySQLDataSource() throws ClassNotFoundException, SQLException {
@@ -30,7 +32,7 @@ public class MySQLDataSource {
 		this.database = Settings.getMySQLDatabase;
 		this.tableName = Settings.getMySQLTablename;
 		this.columnName = Settings.getMySQLColumnName;
-		this.columnPassword = Settings.getMySQLColumnPassword;
+		this.columnName = Settings.getMySQLColumnName;
 
 		connect();
 	}
@@ -72,12 +74,8 @@ public class MySQLDataSource {
 		}
 	}
 	
-	//public synchronized boolean isAuthAvailable(String user) {
-		
-	//}
 	
-
-	public synchronized PlayerAuth getAuth(String user) {
+	public synchronized PlayerInfo getPlayerInfo(String user) {
 		Connection con = null;
 		PreparedStatement pst = null;
 		ResultSet rs = null;
@@ -86,8 +84,11 @@ public class MySQLDataSource {
 			pst = con.prepareStatement("SELECT * FROM " + tableName + " WHERE lower(" + columnName + ")=?;");
 			pst.setString(1, user);
 			rs = pst.executeQuery();
-			if (rs.next()) {				
-				return new PlayerAuth(rs.getString(columnName), rs.getString(columnPassword));
+			if (rs.next()) {
+				String playername = rs.getString(columnName);
+				int playtime = rs.getInt(columnPlaytime);
+				Playerstatus status = Playerstatus.valueOf(rs.getString(columnLoginstatus));
+				return new PlayerInfo(playername,playtime,status);
 			} else {
 				return null;
 			}
@@ -103,6 +104,7 @@ public class MySQLDataSource {
 			close(con);
 		}
 	}
+
 
 	public synchronized void close() {
 		try {
@@ -152,16 +154,12 @@ public class MySQLDataSource {
 				reconnect();
 			} catch (Exception e) {
 				BungeeLogin.instance.getLogger().severe(e.getMessage());
-				if (Settings.isStopEnabled) {
-					BungeeLogin.instance.getLogger().severe("Can't reconnect to MySQL database... Please check your MySQL informations ! SHUTDOWN...");
-					BungeeLogin.instance.getProxy().stop();
-				}
-				if (!Settings.isStopEnabled)
-					BungeeLogin.instance.getProxy().getPluginManager();//.disablePlugin(BungeeLogin.instance); // TODO: fix this
+				BungeeLogin.instance.getLogger().severe("Can't reconnect to MySQL database... Please check your MySQL informations ! SHUTDOWN...");
+				BungeeLogin.instance.shutdown();
 			}
 		} catch (AssertionError ae) {
 			// Make sure assertionerror is caused by the connectionpoolmanager, else re-throw it
-			if (!ae.getMessage().equalsIgnoreCase("AuthMeDatabaseError"))
+			if (!ae.getMessage().equalsIgnoreCase("BungeeDatabaseError"))
 				throw new AssertionError(ae.getMessage());
 			try {
 				con = null;

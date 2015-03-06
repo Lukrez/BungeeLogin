@@ -52,7 +52,9 @@ public class EventListeners implements Listener{
     
     @EventHandler
     public void onPluginMessage(PluginMessageEvent ev) {
-    	
+    	/**
+    	 * PluginChannel, used to get a update from the server that a player has logged in
+    	 */
         if (!ev.getTag().equals("LoginFoo")) {
             return;
         }
@@ -60,19 +62,28 @@ public class EventListeners implements Listener{
         if (!(ev.getSender() instanceof Server)) {
             return;
         }
-        System.out.println("this is it");
         
         ByteArrayInputStream stream = new ByteArrayInputStream(ev.getData());
         DataInputStream in = new DataInputStream(stream);
         try {
-        	BungeeLogin.instance.getLogger().info(in.readUTF());
+        	String message = in.readUTF();
+        	if (!message.matches("#Playerlogin#.+#"))
+        		return;
+        	// get playername
+        	String playername = message.split("#")[2];
+        	this.update(playername);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
     }
     
-    private void update(){
+    private void update(String playername){
+    	/**
+    	 *  Function called if a player has logged in, needs verification over SQL database (to prevent PluginChannel hacking)
+    	 *  
+    	 */
+    	System.out.println("update player "+playername);
     	
     }
 }

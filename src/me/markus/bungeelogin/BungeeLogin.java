@@ -1,6 +1,5 @@
 package me.markus.bungeelogin;
 
-import java.util.logging.Logger;
 
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.api.plugin.Plugin;
@@ -10,15 +9,15 @@ public class BungeeLogin extends Plugin implements Listener{
 	
 	//private HashMap<String,PlayerInfo> players;
 	public static BungeeLogin instance;
-	public static Logger logger;
 	public MySQLDataSource database;
 	
     @Override
     public void onEnable() {
     	instance = this;
-    	logger = this.getProxy().getLogger();
-        // You should not put an enable message in your plugin.
-        // BungeeCord already does so
+    	// Load setting
+    	Settings.loadSettings();
+    	
+    	// link listeners
     	this.getProxy().getPluginManager().registerListener(this, new EventListeners());
     	
     	/*
