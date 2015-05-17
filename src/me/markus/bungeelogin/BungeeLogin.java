@@ -56,22 +56,20 @@ public class BungeeLogin extends Plugin{
     
     
     public void onPlayerJoin(String playername){
-    	System.out.println("getting playerdata");
+    	if (this.players.containsKey(playername)){
+    		return; // Double login handled by server
+    	}
     	// Get playerinfo
     	playername = playername.toLowerCase();
     	PlayerInfo pi = database.getPlayerInfo(playername);
-    	if (pi == null){
-    		pi = new PlayerInfo(playername,0,Playerstatus.Unloggedin);
+    	if (pi == null){ // Guest
+    		pi = new PlayerInfo(playername,0,Playerstatus.Guest);
+    	} else {
+    		pi.status = Playerstatus.Unloggedin;
+    		database.updatePlayerData(pi);
     	}
-    	
-    	if (this.players.containsKey(playername)){
-    		pi = this.players.get(playername); // TODO: Handle already loggedin player? (Kick new player)
-    	}
-    	pi.status = Playerstatus.Unloggedin;
     	this.players.put(playername, pi);
-    	// store new playerdata
-    	database.updatePlayerData(pi);
-    	System.out.println("finsihed update playerdata");
+    	System.out.println("finished update playerdata");
     	
     }
     
