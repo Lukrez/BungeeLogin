@@ -5,7 +5,7 @@ import java.util.HashMap;
 import net.md_5.bungee.api.plugin.Plugin;
 
 
-public class BungeeLogin extends Plugin{
+public class BungeeLogin extends Plugin  {
 	
 	private HashMap<String,PlayerInfo> players;
 	public static BungeeLogin instance;
@@ -104,7 +104,15 @@ public class BungeeLogin extends Plugin{
     		current.status = pi.status;
     	}
     }
-
     
+    /** Public setter-method for players-HashMap  
+     * 
+     * @param player	key
+     * @param pi		value
+     */    
+    public void setPlayerHashMapValue(String player, PlayerInfo pi) {
+    	player = player.toLowerCase();
+    	this.players.put(player, pi);
+    }  
     
 }
