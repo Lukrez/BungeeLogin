@@ -53,7 +53,6 @@ public class EventListeners implements Listener{
     	String cmd = event.getMessage().toLowerCase();
     	if (cmd.startsWith("/l") || cmd.startsWith("/login"))
     		return;
-    	System.out.println();
     	BungeeLogin.instance.getLogger().info("cancel command from "+playername);
     	event.setCancelled(true);
     }
@@ -63,7 +62,8 @@ public class EventListeners implements Listener{
     public void onPluginMessage(PluginMessageEvent ev) {
     	/**
     	 * PluginChannel, used to get a update from the server that a player has logged in
-    	 */
+    	 */   	
+    	
         if (!ev.getTag().equals("LoginFoo")) {
             return;
         }
@@ -80,19 +80,25 @@ public class EventListeners implements Listener{
         		return;
         	// get playername
         	String playername = message.split("#")[2];
-        	this.update(playername);
+        	this.loginPlayer(playername);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
     }
     
-    private void update(String playername){
+    private void loginPlayer(String playername){
     	/**
     	 *  Function called if a player has logged in, needs verification over SQL database (to prevent PluginChannel hacking)
     	 *  
     	 */
-    	System.out.println("update player "+playername);
+    	BungeeLogin plugin = BungeeLogin.instance;
+    	
+    	PlayerInfo pi = plugin.getPlayer(playername);
+    	if (pi.status == Playerstatus.Unloggedin) {
+    		pi.status = Playerstatus.Loggedin;
+    		plugin.setPlayerHashMapValue(playername, pi);
+    	}
     	
     }
 }
