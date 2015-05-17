@@ -18,7 +18,7 @@ public class Settings {
 	public static String getMySQLTablename;
 	public static String getMySQLPassword;
 	public static boolean isStopEnabled;
-	public static String getMySQLColumnName;
+	public static String getMySQLColumnPlayerName;
 	public static String getMySQLColumnLoginStatus;
 	public static String getMySQLColumnPlaytime;
 	
@@ -33,7 +33,7 @@ public class Settings {
 		getMySQLTablename = "all_users";
 		getMySQLPassword = "foobar";
 		isStopEnabled = true;
-		getMySQLColumnName = "username";
+		getMySQLColumnPlayerName = "usernamC";
 		getMySQLColumnLoginStatus = "loginStatus";
 		getMySQLColumnPlaytime = "playtime";
 
@@ -50,8 +50,8 @@ public class Settings {
 			getMySQLDatabase = yaml.getString("Datasource.mySQLDatabase");
 			getMySQLTablename = yaml.getString("Datasource.mySQLTablename");
 			getMySQLPassword = yaml.getString("Datasource.mySQLPassword");
-			getMySQLColumnName = yaml.getString("Datasource.mySQLColumnName");
-			getMySQLColumnLoginStatus = yaml.getString("Datasource.mySQLColumnLoginStatus"); // loginStatus
+			getMySQLColumnPlayerName = yaml.getString("Datasource.mySQLColumnPlayerName");
+			getMySQLColumnLoginStatus = yaml.getString("Datasource.mySQLColumnLoginStatus");
 			getMySQLColumnPlaytime = yaml.getString("Datasource.mySQLColumnPlaytime");
 			
 			isStopEnabled = yaml.getBoolean("Security.SQLProblem.stopServer");
@@ -75,8 +75,9 @@ public class Settings {
 		yaml.set("Datasource.mySQLPassword", getMySQLPassword);
 		yaml.set("Datasource.mySQLTablename", getMySQLTablename);
 		yaml.set("Datasource.mySQLDatabase", getMySQLDatabase);
-		yaml.set("Datasource.mySQLColumnName", getMySQLColumnName);
+		yaml.set("Datasource.mySQLColumnPlayerName", getMySQLColumnPlayerName);
 		yaml.set("Datasource.mySQLColumnPlaytime", getMySQLColumnPlaytime);
+		yaml.set("Datasource.mySQLColumnLoginStatus", getMySQLColumnLoginStatus);
 		
 		yaml.set("Security.SQLProblem.stopServer", isStopEnabled);
 

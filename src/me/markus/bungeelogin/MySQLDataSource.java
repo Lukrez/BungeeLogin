@@ -7,6 +7,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.GregorianCalendar;
 
 import me.markus.bungeelogin.MiniConnectionPoolManager.TimeoutException;
 
@@ -31,8 +32,10 @@ public class MySQLDataSource {
 		this.password = Settings.getMySQLPassword;
 		this.database = Settings.getMySQLDatabase;
 		this.tableName = Settings.getMySQLTablename;
-		this.columnName = Settings.getMySQLColumnName;
-		this.columnName = Settings.getMySQLColumnName;
+		this.columnName = Settings.getMySQLColumnPlayerName;
+		this.columnPlaytime = Settings.getMySQLColumnPlaytime;
+		this.columnLoginstatus = Settings.getMySQLColumnLoginStatus;
+
 
 		connect();
 	}
@@ -48,30 +51,8 @@ public class MySQLDataSource {
 		dataSource.setPassword(password);
 		conPool = new MiniConnectionPoolManager(dataSource, 20);
 		BungeeLogin.instance.getLogger().info("Connection pool ready");
-	}
-
-	public synchronized boolean isAuthAvailable(String user) {
-		Connection con = null;
-		PreparedStatement pst = null;
-		ResultSet rs = null;
-		try {
-			con = makeSureConnectionIsReady();
-			pst = con.prepareStatement("SELECT * FROM " + tableName + " WHERE " + columnName + "=?;");
-
-			pst.setString(1, user);
-			rs = pst.executeQuery();
-			return rs.next();
-		} catch (SQLException ex) {
-			BungeeLogin.instance.getLogger().severe(ex.getMessage());
-			return false;
-		} catch (TimeoutException ex) {
-			BungeeLogin.instance.getLogger().severe(ex.getMessage());
-			return false;
-		} finally {
-			close(rs);
-			close(pst);
-			close(con);
-		}
+		// check if database exists
+		//this.setup();
 	}
 	
 	
@@ -100,6 +81,42 @@ public class MySQLDataSource {
 			return null;
 		} finally {
 			close(rs);
+			close(pst);
+			close(con);
+		}
+	}
+	
+	public synchronized void updatePlayerData(PlayerInfo playerinfo) {
+		// calculate new playtime
+    	GregorianCalendar now = new GregorianCalendar();
+    	int minutes = (int)((now.getTimeInMillis() - playerinfo.joinedAt.getTimeInMillis())/1000/60);
+    	playerinfo.playtime += minutes;
+    	
+		Connection con = null;
+		PreparedStatement pst = null;
+		try {
+			con = makeSureConnectionIsReady();
+
+			String statement = String.format("INSERT INTO %s (%s,%s,%s) VALUES(?,?,?) ON DUPLICATE KEY UPDATE %s=VALUES(%s), %s=VALUES(%s);",
+								this.tableName,
+								this.columnName,this.columnLoginstatus,this.columnPlaytime,
+								this.columnLoginstatus,this.columnLoginstatus,
+								this.columnPlaytime,this.columnPlaytime);
+			
+			
+			pst = con.prepareStatement(statement);
+			pst.setString(1, playerinfo.playername);
+			pst.setString(2, playerinfo.status.toString());
+			pst.setInt(3, playerinfo.playtime);
+			boolean result = pst.execute();
+			BungeeLogin.instance.getLogger().info("Update sucessful? "+result);
+		} catch (SQLException ex) {
+			BungeeLogin.instance.getLogger().severe(ex.getMessage());
+			return;
+		} catch (TimeoutException ex) {
+			BungeeLogin.instance.getLogger().severe(ex.getMessage());
+			return;
+		} finally {
 			close(pst);
 			close(con);
 		}
@@ -187,38 +204,24 @@ public class MySQLDataSource {
 		conPool = new MiniConnectionPoolManager(dataSource, 10);
 		BungeeLogin.instance.getLogger().info("ConnectionPool was unavailable... Reconnected!");
 	}
-
-	/*private synchronized void setup() throws SQLException {
+	
+	private synchronized void setup() throws SQLException {
 	    Connection con = null;
 	    Statement st = null;
-	    ResultSet rs = null;
 	    try {
 	        con = makeSureConnectionIsReady();
 	        st = con.createStatement();
 	        st.executeUpdate("CREATE TABLE IF NOT EXISTS " + tableName + " ("
 	                + "id" + " INTEGER AUTO_INCREMENT,"
 	                + columnName + " VARCHAR(255) NOT NULL UNIQUE,"
-	                + columnPassword + " VARCHAR(255) NOT NULL,"
-	                + columnSalt + " VARCHAR(255) NOT NULL,"
+	                + columnLoginstatus + " VARCHAR(255) NOT NULL,"
+	                + columnPlaytime + " INTEGER NOT NULL,"
 	                + "CONSTRAINT table_const_prim PRIMARY KEY (id));");
-	        rs = con.getMetaData().getColumns(null, null, tableName, columnPassword);
-	        if (!rs.next()) {
-	            st.executeUpdate("ALTER TABLE " + tableName + " ADD COLUMN "
-	                    + columnPassword + " VARCHAR(255) NOT NULL;");
-	        }
-	        rs.close();
-	        rs = con.getMetaData().getColumns(null, null, tableName, columnIp);
-	        if (!rs.next()) {
-	            st.executeUpdate("ALTER TABLE " + tableName + " ADD COLUMN "
-	                    + columnIp + " VARCHAR(40) NOT NULL;");
-	        }
-	        rs.close();
 	    } finally {
-	        close(rs);
 	        close(st);
 	        close(con);
 	    }
-	}*/
+	}
 
 	/*public synchronized void registerUser(String username, String passwordHash, String salt) throws SQLException {
 		Connection con = null;

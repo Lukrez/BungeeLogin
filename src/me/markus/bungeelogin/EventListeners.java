@@ -26,14 +26,13 @@ public class EventListeners implements Listener{
 	
 	@EventHandler
 	public void onLogin(LoginEvent event){
-		BungeeLogin.instance.getLogger().info("Spieler " + event.getConnection().getName()+" login");
-		//getLogger().info("Yay! It loads!");
+		String playername = event.getConnection().getName();
+		BungeeLogin.instance.onPlayerJoin(playername);
 	}
 	
 	@EventHandler
 	public void onDisconnect(PlayerDisconnectEvent event){
-		BungeeLogin.instance.getLogger().info("Spieler " + event.getPlayer()+" disconnect");
-		//getLogger().info("Yay! It loads!");
+		BungeeLogin.instance.onPlayerLeave(event.getPlayer().getName());
 	}
 	
 	@EventHandler
@@ -42,10 +41,20 @@ public class EventListeners implements Listener{
     	if (!event.isCommand()){
     		return;
     	}
+    	String playername = event.getSender().toString();
+    	// get playerinfo
+    	PlayerInfo pi = BungeeLogin.instance.getPlayer(playername);
+    	if (pi == null)
+    		return;
+    	
+    	// check if player is not loggedin
+    	if (pi.status != Playerstatus.Unloggedin)
+    		return;
     	String cmd = event.getMessage().toLowerCase();
     	if (cmd.startsWith("/l") || cmd.startsWith("/login"))
     		return;
-    	System.out.println("cancel command!");
+    	System.out.println();
+    	BungeeLogin.instance.getLogger().info("cancel command from "+playername);
     	event.setCancelled(true);
     }
     
