@@ -79,32 +79,17 @@ public class BungeeLogin extends Plugin{
     	if (pi == null){
     		return;
     	}
-    	
+    	this.players.remove(playername);
+    	if (pi.status == Playerstatus.Guest)
+    		return;
     	pi.status = Playerstatus.Offline;
+    	// TODO: Set playertime
     	database.updatePlayerData(pi);
-    	
     }
     
     public PlayerInfo getPlayer(String playername){
     	playername = playername.toLowerCase();
     	PlayerInfo pi = this.players.get(playername);
     	return pi;
-    }
-    
-    public void verifyPlayerLogin(String playername){
-    	// check if player is currently set as unloggedin
-    	PlayerInfo current = this.getPlayer(playername);
-    	if (current == null)
-    		return;
-    	if (current.status != Playerstatus.Unloggedin)
-    		return;
-    	// get new PlayerInfo from database
-    	PlayerInfo pi = database.getPlayerInfo(playername);
-    	if (pi.status != Playerstatus.Unloggedin){
-    		current.status = pi.status;
-    	}
-    }
-
-    
-    
+    }    
 }
