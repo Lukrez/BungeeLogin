@@ -16,4 +16,10 @@ public class PlayerInfo {
 		this.joinedAt = new GregorianCalendar();
 	}
 	
+	public int calcPlayTime(){
+		GregorianCalendar now = new GregorianCalendar();
+    	int minutes = (int)((now.getTimeInMillis() - this.joinedAt.getTimeInMillis())/1000/60);
+    	return this.playtime + minutes;
+	}
+	
 }

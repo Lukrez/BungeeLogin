@@ -2,6 +2,9 @@ package me.markus.bungeelogin;
 
 import java.util.HashMap;
 
+import net.md_5.bungee.api.CommandSender;
+import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.api.plugin.Command;
 import net.md_5.bungee.api.plugin.Plugin;
 
 
@@ -24,6 +27,8 @@ public class BungeeLogin extends Plugin  {
     	// link listeners
     	this.getProxy().getPluginManager().registerListener(this, new EventListeners());
     	
+    	// link commands
+    	this.getProxy().getPluginManager().registerCommand(this, new BungeCheckTime(this));
     	
     	try {
     		database = new MySQLDataSource();
@@ -42,6 +47,11 @@ public class BungeeLogin extends Plugin  {
     
     @Override
     public void onDisable() {
+    	// save playerdata
+    	for (PlayerInfo pi : this.players.values()){
+    		database.updatePlayerData(pi);
+    	}
+    	getLogger().info("Stored playerdata!");
     	database.close();
     }
     
@@ -101,6 +111,66 @@ public class BungeeLogin extends Plugin  {
     public void setPlayerHashMapValue(String player, PlayerInfo pi) {
     	player = player.toLowerCase();
     	this.players.put(player, pi);
-    }  
+    }
     
+}
+
+class BungeCheckTime extends Command{
+	private BungeeLogin plugin;
+	
+	public BungeCheckTime(BungeeLogin plugin) {
+	      super("playtime");
+	      this.plugin = plugin;
+	  }
+
+	@Override
+	public void execute(CommandSender sender, String[] args) {
+		/*if (!sender.hasPermission("easylogin.manage")){
+			return;
+		}*/
+		String playername;
+		String s;
+		if (args.length == 0) {
+			playername = sender.getName().toLowerCase();
+			s = "Du hast bisher ";
+		} else {
+			playername = args[0].toLowerCase();
+			s = "Der Spieler "+ playername + " hat bisher ";
+		}
+		PlayerInfo pi = this.plugin.getPlayer(playername);
+		if (pi == null){
+			sender.sendMessage(new TextComponent("Spieler ist momentan nicht eingeloggt!"));
+			return;
+		}
+		int minutes = pi.calcPlayTime();
+		// calculate time format
+		int weeks = minutes/(60*24*7);
+		int days = (minutes/(60*24))%7;
+		int hours = (minutes/60)%24;
+		int remminutes = minutes%60;
+		
+		if (weeks == 1){
+			s += weeks + " Woche ";
+		} else if (weeks > 1){
+			s += weeks + " Wochen ";
+		}
+		if (days == 1){
+			s += days + " Tag ";
+		} else if (days > 1){
+			s += days + " Tage ";
+		}
+		
+		if (hours == 1){
+			s += hours + " Stunde ";
+		} else if (hours > 1){
+			s += hours + " Stunden ";
+		}
+		if (remminutes == 1){
+			s += remminutes + " Minute auf dem Server gespielt!";
+		} else {
+			s += remminutes + " Minuten auf dem Server gespielt!";
+		}
+		
+		sender.sendMessage(new TextComponent(s));
+	}
 }

@@ -7,7 +7,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.GregorianCalendar;
 
 import me.markus.bungeelogin.MiniConnectionPoolManager.TimeoutException;
 
@@ -88,28 +87,26 @@ public class MySQLDataSource {
 	
 	public synchronized void updatePlayerData(PlayerInfo playerinfo) {
 		// calculate new playtime
-    	GregorianCalendar now = new GregorianCalendar();
-    	int minutes = (int)((now.getTimeInMillis() - playerinfo.joinedAt.getTimeInMillis())/1000/60);
-    	playerinfo.playtime += minutes;
+    	playerinfo.playtime = playerinfo.calcPlayTime();
     	
 		Connection con = null;
 		PreparedStatement pst = null;
 		try {
 			con = makeSureConnectionIsReady();
-
-			String statement = String.format("INSERT INTO %s (%s,%s,%s) VALUES(?,?,?) ON DUPLICATE KEY UPDATE %s=VALUES(%s), %s=VALUES(%s);",
-								this.tableName,
-								this.columnName,this.columnLoginstatus,this.columnPlaytime,
-								this.columnLoginstatus,this.columnLoginstatus,
-								this.columnPlaytime,this.columnPlaytime);
 			
+			String statement = String.format("UPDATE %s SET %s=?, %s=? WHERE lower(%s)=?;",
+					this.tableName,
+					this.columnLoginstatus,
+					this.columnPlaytime,
+					this.columnName);
 			
 			pst = con.prepareStatement(statement);
-			pst.setString(1, playerinfo.playername);
-			pst.setString(2, playerinfo.status.toString());
-			pst.setInt(3, playerinfo.playtime);
+			pst.setString(1, playerinfo.status.toString());
+			pst.setInt(2, playerinfo.playtime);
+			pst.setString(3, playerinfo.playername);
+			
 			boolean result = pst.execute();
-			BungeeLogin.instance.getLogger().info("Update sucessful? "+result);
+			BungeeLogin.instance.getLogger().info("Update sucessfull? "+result);
 		} catch (SQLException ex) {
 			BungeeLogin.instance.getLogger().severe(ex.getMessage());
 			return;
@@ -204,39 +201,5 @@ public class MySQLDataSource {
 		conPool = new MiniConnectionPoolManager(dataSource, 10);
 		BungeeLogin.instance.getLogger().info("ConnectionPool was unavailable... Reconnected!");
 	}
-	
-	private synchronized void setup() throws SQLException {
-	    Connection con = null;
-	    Statement st = null;
-	    try {
-	        con = makeSureConnectionIsReady();
-	        st = con.createStatement();
-	        st.executeUpdate("CREATE TABLE IF NOT EXISTS " + tableName + " ("
-	                + "id" + " INTEGER AUTO_INCREMENT,"
-	                + columnName + " VARCHAR(255) NOT NULL UNIQUE,"
-	                + columnLoginstatus + " VARCHAR(255) NOT NULL,"
-	                + columnPlaytime + " INTEGER NOT NULL,"
-	                + "CONSTRAINT table_const_prim PRIMARY KEY (id));");
-	    } finally {
-	        close(st);
-	        close(con);
-	    }
-	}
-
-	/*public synchronized void registerUser(String username, String passwordHash, String salt) throws SQLException {
-		Connection con = null;
-		Statement st = null;
-		try {
-			con = makeSureConnectionIsReady();
-			st = con.createStatement();
-			String state = "INSERT INTO " + tableName + " (" + columnName + "," + columnPassword + "," + columnSalt + ")" + " VALUES (" + "'" + username + "','" + passwordHash + "','" + salt + "');";
-			System.out.println(state);
-			st.executeUpdate(state);
-		} finally {
-			close(st);
-			close(con);
-		}
-
-	}*/
 
 }

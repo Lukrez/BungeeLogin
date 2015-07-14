@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 
+import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.Server;
 import net.md_5.bungee.api.event.ChatEvent;
 import net.md_5.bungee.api.event.LoginEvent;
@@ -38,9 +39,6 @@ public class EventListeners implements Listener{
 	@EventHandler
     public void onChatEvent(ChatEvent event) {
     	
-    	if (!event.isCommand()){
-    		return;
-    	}
     	String playername = event.getSender().toString();
     	// get playerinfo
     	PlayerInfo pi = BungeeLogin.instance.getPlayer(playername);
@@ -54,6 +52,7 @@ public class EventListeners implements Listener{
     	if (cmd.startsWith("/l") || cmd.startsWith("/login"))
     		return;
     	BungeeLogin.instance.getLogger().info("cancel command from "+playername);
+    	BungeeLogin.instance.getProxy().getPlayer(playername).sendMessage(new TextComponent("Du musst dich einloggen um chatten oder Befehle eingeben zu können!"));
     	event.setCancelled(true);
     }
     
