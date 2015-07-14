@@ -40,15 +40,21 @@ public class EventListeners implements Listener{
     public void onChatEvent(ChatEvent event) {
     	
     	String playername = event.getSender().toString();
+    	String cmd = event.getMessage().toLowerCase();
     	// get playerinfo
     	PlayerInfo pi = BungeeLogin.instance.getPlayer(playername);
+    	if (pi == null || pi.status == Playerstatus.Guest){
+    		if (cmd.startsWith("/server")){
+    			event.setCancelled(true);
+    		}
+    	}
     	if (pi == null)
     		return;
     	
     	// check if player is not loggedin
     	if (pi.status != Playerstatus.Unloggedin)
     		return;
-    	String cmd = event.getMessage().toLowerCase();
+    	
     	if (cmd.startsWith("/l") || cmd.startsWith("/login"))
     		return;
     	BungeeLogin.instance.getLogger().info("cancel command from "+playername);
