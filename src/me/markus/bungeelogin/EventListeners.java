@@ -4,7 +4,9 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 
+import net.md_5.bungee.BungeeCord;
 import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.connection.Server;
 import net.md_5.bungee.api.event.ChatEvent;
 import net.md_5.bungee.api.event.LoginEvent;
@@ -29,6 +31,7 @@ public class EventListeners implements Listener{
 	public void onLogin(LoginEvent event){
 		String playername = event.getConnection().getName();
 		BungeeLogin.instance.onPlayerJoin(playername);
+		BungeeLogin.instance.getProxy().broadcast(new TextComponent(playername + "  "));;
 	}
 	
 	@EventHandler
@@ -37,29 +40,29 @@ public class EventListeners implements Listener{
 	}
 	
 	@EventHandler
-    public void onChatEvent(ChatEvent event) {
-    	
-    	String playername = event.getSender().toString();
-    	String cmd = event.getMessage().toLowerCase();
-    	// get playerinfo
-    	PlayerInfo pi = BungeeLogin.instance.getPlayer(playername);
-    	if (pi == null || pi.status == Playerstatus.Guest){
-    		if (cmd.startsWith("/server")){
-    			event.setCancelled(true);
-    		}
-    	}
-    	if (pi == null)
-    		return;
-    	
-    	// check if player is not loggedin
-    	if (pi.status != Playerstatus.Unloggedin)
-    		return;
-    	
-    	if (cmd.startsWith("/l") || cmd.startsWith("/login"))
-    		return;
-    	BungeeLogin.instance.getLogger().info("cancel command from "+playername);
-    	BungeeLogin.instance.getProxy().getPlayer(playername).sendMessage(new TextComponent("Du musst dich einloggen um chatten oder Befehle eingeben zu können!"));
-    	event.setCancelled(true);
+    public void onChatEvent(ChatEvent event) {                
+                
+        String cmd = event.getMessage().toLowerCase();
+        //check for valid commands
+        if (cmd.startsWith("/l") || cmd.startsWith("/login"))
+            return;
+            
+        String playername = event.getSender().toString();
+        ProxiedPlayer player = BungeeLogin.instance.getProxy().getPlayer(playername);
+        
+        PlayerInfo pi = BungeeLogin.instance.getPlayer(playername);     
+        if (pi == null || pi.status == Playerstatus.Guest) {
+            //Guest
+        	player.sendMessage(new TextComponent("Diesen Befehl kannst du als Gast nicht verwenden!"));
+            BungeeLogin.instance.getLogger().info("cancel command from "+playername);
+            event.setCancelled(true);
+            return;
+        }
+        else if (pi.status == Playerstatus.Unloggedin) {
+        	player.sendMessage(new TextComponent("Du musst dich einloggen um chatten oder Befehle eingeben zu können!"));
+            BungeeLogin.instance.getLogger().info("cancel command from "+playername);
+            event.setCancelled(true);
+        }       
     }
     
     
