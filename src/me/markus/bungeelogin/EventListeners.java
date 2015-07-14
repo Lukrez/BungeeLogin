@@ -4,7 +4,6 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 
-import net.md_5.bungee.BungeeCord;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.connection.Server;
@@ -31,7 +30,6 @@ public class EventListeners implements Listener{
 	public void onLogin(LoginEvent event){
 		String playername = event.getConnection().getName();
 		BungeeLogin.instance.onPlayerJoin(playername);
-		BungeeLogin.instance.getProxy().broadcast(new TextComponent(playername + "  "));;
 	}
 	
 	@EventHandler

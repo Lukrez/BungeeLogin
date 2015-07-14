@@ -79,11 +79,11 @@ public class BungeeLogin extends Plugin  {
     		database.updatePlayerData(pi);
     	}
     	this.players.put(playername, pi);
-    	System.out.println("finished update playerdata");
-    	
+    	BungeeLogin.instance.getProxy().broadcast(new TextComponent("§e" + playername + "$f hat den Minecraft-Spielewiese Server betreten!"));
     }
     
     public void onPlayerLeave(String playername){
+    	BungeeLogin.instance.getProxy().broadcast(new TextComponent("§e" + playername + "$f hat den Minecraft-Spielewiese Server verlassen!"));
     	playername = playername.toLowerCase();
     	PlayerInfo pi = this.players.get(playername);
     	if (pi == null){
