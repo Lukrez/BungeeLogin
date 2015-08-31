@@ -4,6 +4,7 @@ import java.util.HashMap;
 
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Command;
 import net.md_5.bungee.api.plugin.Plugin;
 
@@ -70,20 +71,21 @@ public class BungeeLogin extends Plugin  {
     		return; // Double login handled by server
     	}
     	// Get playerinfo
-    	playername = playername.toLowerCase();
-    	PlayerInfo pi = database.getPlayerInfo(playername);
+    	String lowerplayername = playername.toLowerCase();
+    	PlayerInfo pi = database.getPlayerInfo(lowerplayername);
     	if (pi == null){ // Guest
     		pi = new PlayerInfo(playername,0,Playerstatus.Guest);
     	} else {
     		pi.status = Playerstatus.Unloggedin;
     		database.updatePlayerData(pi);
     	}
-    	this.players.put(playername, pi);
-    	BungeeLogin.instance.getProxy().broadcast(new TextComponent("§e" + playername + "$f hat den Minecraft-Spielewiese Server betreten!"));
+    	this.players.put(lowerplayername, pi);
+    	this.sendBroadcastToAllPlayers("§e" + playername + "§f hat die Spielewiese betreten!");
+    	
     }
     
     public void onPlayerLeave(String playername){
-    	BungeeLogin.instance.getProxy().broadcast(new TextComponent("§e" + playername + "$f hat den Minecraft-Spielewiese Server verlassen!"));
+    	this.sendBroadcastToAllPlayers("§e" + playername + "§f hat die Spielewiese verlassen!");
     	playername = playername.toLowerCase();
     	PlayerInfo pi = this.players.get(playername);
     	if (pi == null){
@@ -111,6 +113,16 @@ public class BungeeLogin extends Plugin  {
     public void setPlayerHashMapValue(String player, PlayerInfo pi) {
     	player = player.toLowerCase();
     	this.players.put(player, pi);
+    }
+    
+    private void sendBroadcastToAllPlayers(String message) {
+    	for (PlayerInfo pi : this.players.values()){
+    		ProxiedPlayer pp = this.getProxy().getPlayer(pi.playername);
+            if (pp != null) 
+                pp.sendMessage(new TextComponent(message));
+            else
+                BungeeLogin.instance.getLogger().info("Could not send broadcast-message to player " + pi.playername);
+    	}   
     }
     
 }

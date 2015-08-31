@@ -28,6 +28,9 @@ public class EventListeners implements Listener{
 	
 	@EventHandler
 	public void onLogin(LoginEvent event){
+		
+		if (event.isCancelled())
+			return;
 		String playername = event.getConnection().getName();
 		BungeeLogin.instance.onPlayerJoin(playername);
 	}
@@ -50,11 +53,13 @@ public class EventListeners implements Listener{
         
         PlayerInfo pi = BungeeLogin.instance.getPlayer(playername);     
         if (pi == null || pi.status == Playerstatus.Guest) {
-            //Guest
-        	player.sendMessage(new TextComponent("Diesen Befehl kannst du als Gast nicht verwenden!"));
-            BungeeLogin.instance.getLogger().info("cancel command from "+playername);
-            event.setCancelled(true);
-            return;
+        	if (cmd.startsWith("/server")){
+	            //Guest
+	        	player.sendMessage(new TextComponent("Du kannst als Gast den Lobby-Server nicht verlassen!"));
+	            BungeeLogin.instance.getLogger().info("cancel command from "+playername);
+	            event.setCancelled(true);
+	            return;
+        	}
         }
         else if (pi.status == Playerstatus.Unloggedin) {
         	player.sendMessage(new TextComponent("Du musst dich einloggen um chatten oder Befehle eingeben zu können!"));
