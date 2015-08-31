@@ -87,6 +87,11 @@ public class EventListeners implements Listener{
         DataInputStream in = new DataInputStream(stream);
         try {
         	String message = in.readUTF();
+        	if (message.matches("#Playerlogin#.+#")){
+        		String name = message.split("#")[2];
+        		BungeeLogin.instance.sendBroadcastToAllPlayers("§e" + name + "§f hat die Spielewiese betreten!");
+        		return;
+        	}
         	if (!message.matches("#Playerlogin#.+#"))
         		return;
         	// get playername

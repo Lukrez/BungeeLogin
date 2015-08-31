@@ -80,8 +80,6 @@ public class BungeeLogin extends Plugin  {
     		database.updatePlayerData(pi);
     	}
     	this.players.put(lowerplayername, pi);
-    	this.sendBroadcastToAllPlayers("§e" + playername + "§f hat die Spielewiese betreten!");
-    	
     }
     
     public void onPlayerLeave(String playername){
@@ -115,7 +113,7 @@ public class BungeeLogin extends Plugin  {
     	this.players.put(player, pi);
     }
     
-    private void sendBroadcastToAllPlayers(String message) {
+    public void sendBroadcastToAllPlayers(String message) {
     	for (PlayerInfo pi : this.players.values()){
     		ProxiedPlayer pp = this.getProxy().getPlayer(pi.playername);
             if (pp != null) 
@@ -123,6 +121,10 @@ public class BungeeLogin extends Plugin  {
             else
                 BungeeLogin.instance.getLogger().info("Could not send broadcast-message to player " + pi.playername);
     	}   
+    }
+    
+    public void senMessageToAll(String message){
+    	
     }
     
 }
