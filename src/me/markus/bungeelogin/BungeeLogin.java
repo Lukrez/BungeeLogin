@@ -75,6 +75,7 @@ public class BungeeLogin extends Plugin  {
     	PlayerInfo pi = database.getPlayerInfo(lowerplayername);
     	if (pi == null){ // Guest
     		pi = new PlayerInfo(playername,0,Playerstatus.Guest);
+    		this.sendBroadcastToAllPlayers("§f Der Gast §e" + playername + "§f hat die Spielewiese betreten!");
     	} else {
     		pi.status = Playerstatus.Unloggedin;
     		database.updatePlayerData(pi);

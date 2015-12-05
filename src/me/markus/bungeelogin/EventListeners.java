@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 
+import me.markus.bungeechat.GlobalChatEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.connection.Server;
@@ -41,11 +42,11 @@ public class EventListeners implements Listener{
 	}
 	
 	@EventHandler
-    public void onChatEvent(ChatEvent event) {                
+    public void onCommandEvent(ChatEvent event) {                
                 
         String cmd = event.getMessage().toLowerCase();
         //check for valid commands
-        if (cmd.startsWith("/l") || cmd.startsWith("/login"))
+        if (cmd.startsWith("/l ") || cmd.startsWith("/login "))
             return;
             
         String playername = event.getSender().toString();
@@ -63,10 +64,26 @@ public class EventListeners implements Listener{
         }
         else if (pi.status == Playerstatus.Unloggedin) {
         	player.sendMessage(new TextComponent("Du musst dich einloggen um chatten oder Befehle eingeben zu können!"));
-            BungeeLogin.instance.getLogger().info("cancel command from "+playername);
+            BungeeLogin.instance.getLogger().info("cancel command ChatEvent from unloggedin "+playername);
             event.setCancelled(true);
         }       
     }
+	
+	@EventHandler
+    public void onGlobalChatEvent(GlobalChatEvent event) { 
+	        if (event.getMessage().startsWith("/")){
+	        	return;
+	        }
+	        String playername = event.getSender().toString();
+	        
+	        PlayerInfo pi = BungeeLogin.instance.getPlayer(playername);     
+	        if (pi.status == Playerstatus.Unloggedin) {
+	        	//player.sendMessage(new TextComponent("Du musst dich einloggen um chatten oder Befehle eingeben zu können!"));
+	            BungeeLogin.instance.getLogger().info("cancel global chat from "+playername);
+	            event.setCancelled(true);
+	        }      
+	}
+	
     
     
     @EventHandler
@@ -87,34 +104,39 @@ public class EventListeners implements Listener{
         DataInputStream in = new DataInputStream(stream);
         try {
         	String message = in.readUTF();
-        	if (message.matches("#Playerlogin#.+#")){
-        		String name = message.split("#")[2];
-        		BungeeLogin.instance.sendBroadcastToAllPlayers("§e" + name + "§f hat die Spielewiese betreten!");
-        		return;
-        	}
         	if (!message.matches("#Playerlogin#.+#"))
         		return;
+    		String name = message.split("#")[2];
+    		
         	// get playername
         	String playername = message.split("#")[2];
-        	this.loginPlayer(playername);
+        	if (this.loginPlayer(playername)){
+        		BungeeLogin.instance.sendBroadcastToAllPlayers("§e" + name + "§f hat die Spielewiese betreten!");
+        	}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
     }
     
-    private void loginPlayer(String playername){
+    private boolean loginPlayer(String playername){
     	/**
     	 *  Function called if a player has logged in, needs verification over SQL database (to prevent PluginChannel hacking)
     	 *  
     	 */
     	BungeeLogin plugin = BungeeLogin.instance;
+    	PlayerInfo unloggedinUser = plugin.getPlayer(playername);
+    	if (unloggedinUser.status != Playerstatus.Unloggedin)
+    		return false;
+    	// get verification from database
+    	PlayerInfo checkPlayer = plugin.database.getPlayerInfo(playername.toLowerCase());
     	
-    	PlayerInfo pi = plugin.getPlayer(playername);
-    	if (pi.status == Playerstatus.Unloggedin) {
-    		pi.status = Playerstatus.Loggedin;
-    		plugin.setPlayerHashMapValue(playername, pi);
+    	if (checkPlayer.status == Playerstatus.Loggedin){
+    		unloggedinUser.status = Playerstatus.Loggedin;
+    		plugin.setPlayerHashMapValue(playername, unloggedinUser);
+    		return true;
     	}
+    	return false;
     	
     }
 }

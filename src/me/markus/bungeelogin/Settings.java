@@ -33,7 +33,7 @@ public class Settings {
 		getMySQLTablename = "all_users";
 		getMySQLPassword = "foobar";
 		isStopEnabled = true;
-		getMySQLColumnPlayerName = "usernamC";
+		getMySQLColumnPlayerName = "username";
 		getMySQLColumnLoginStatus = "loginStatus";
 		getMySQLColumnPlaytime = "playtime";
 
@@ -66,26 +66,29 @@ public class Settings {
 
 	public static void saveSettings() {
 		File file = new File(BungeeLogin.instance.getDataFolder(), "config.yml");
-		
-		Configuration yaml = new Configuration();
-
-		yaml.set("Datasource.mySQLHost", getMySQLHost);
-		yaml.set("Datasource.mySQLPort", getMySQLPort);
-		yaml.set("Datasource.mySQLUsername", getMySQLUsername);
-		yaml.set("Datasource.mySQLPassword", getMySQLPassword);
-		yaml.set("Datasource.mySQLTablename", getMySQLTablename);
-		yaml.set("Datasource.mySQLDatabase", getMySQLDatabase);
-		yaml.set("Datasource.mySQLColumnPlayerName", getMySQLColumnPlayerName);
-		yaml.set("Datasource.mySQLColumnPlaytime", getMySQLColumnPlaytime);
-		yaml.set("Datasource.mySQLColumnLoginStatus", getMySQLColumnLoginStatus);
-		
-		yaml.set("Security.SQLProblem.stopServer", isStopEnabled);
-
-
 		try {
+			if (!file.exists()){
+				file.createNewFile();
+			}
+				
+			Configuration yaml = ConfigurationProvider.getProvider(YamlConfiguration.class).load(file);
+			yaml.set("Datasource.mySQLHost", getMySQLHost);
+			yaml.set("Datasource.mySQLPort", getMySQLPort);
+			yaml.set("Datasource.mySQLUsername", getMySQLUsername);
+			yaml.set("Datasource.mySQLPassword", getMySQLPassword);
+			yaml.set("Datasource.mySQLTablename", getMySQLTablename);
+			yaml.set("Datasource.mySQLDatabase", getMySQLDatabase);
+			yaml.set("Datasource.mySQLColumnPlayerName", getMySQLColumnPlayerName);
+			yaml.set("Datasource.mySQLColumnPlaytime", getMySQLColumnPlaytime);
+			yaml.set("Datasource.mySQLColumnLoginStatus", getMySQLColumnLoginStatus);
+			
+			yaml.set("Security.SQLProblem.stopServer", isStopEnabled);
+			
 			ConfigurationProvider.getProvider(YamlConfiguration.class).save(yaml, file);
-		} catch (IOException e) {
-			e.printStackTrace();
+			
+		} catch (IOException e1) {
+			e1.printStackTrace();
 		}
+		
 	}
 }
