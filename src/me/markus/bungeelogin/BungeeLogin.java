@@ -11,7 +11,7 @@ import net.md_5.bungee.api.plugin.Plugin;
 
 public class BungeeLogin extends Plugin  {
 	
-	private HashMap<String,PlayerInfo> players;
+	private HashMap<String,PlayerInfo> players; // Keeps information about all current players on the server, Key is the lowercase playername
 	public static BungeeLogin instance;
 	public MySQLDataSource database;
 	
@@ -30,6 +30,7 @@ public class BungeeLogin extends Plugin  {
     	
     	// link commands
     	this.getProxy().getPluginManager().registerCommand(this, new BungeCheckTime(this));
+    	this.getProxy().getPluginManager().registerCommand(this, new BungeGuestWhitelistt(this));
     	
     	try {
     		database = new MySQLDataSource();
@@ -67,12 +68,13 @@ public class BungeeLogin extends Plugin  {
     
     
     public void onPlayerJoin(String playername){
-    	if (this.players.containsKey(playername)){
+    	
+    	// Get playerinfo
+    	String lwcplayername = playername.toLowerCase();
+    	if (this.players.containsKey(lwcplayername)){
     		return; // Double login handled by server
     	}
-    	// Get playerinfo
-    	String lowerplayername = playername.toLowerCase();
-    	PlayerInfo pi = database.getPlayerInfo(lowerplayername);
+    	PlayerInfo pi = database.getPlayerInfo(playername);
     	if (pi == null){ // Guest
     		pi = new PlayerInfo(playername,0,Playerstatus.Guest);
     		this.sendBroadcastToAllPlayers("§f Der Gast §e" + playername + "§f hat die Spielewiese betreten!");
@@ -80,17 +82,17 @@ public class BungeeLogin extends Plugin  {
     		pi.status = Playerstatus.Unloggedin;
     		database.updatePlayerData(pi);
     	}
-    	this.players.put(lowerplayername, pi);
+    	this.players.put(lwcplayername, pi);
     }
     
     public void onPlayerLeave(String playername){
-    	this.sendBroadcastToAllPlayers("§e" + playername + "§f hat die Spielewiese verlassen!");
-    	playername = playername.toLowerCase();
-    	PlayerInfo pi = this.players.get(playername);
+    	
+    	String lwrplayername = playername.toLowerCase();
+    	PlayerInfo pi = this.players.remove(lwrplayername);
     	if (pi == null){
     		return;
     	}
-    	this.players.remove(playername);
+    	this.sendBroadcastToAllPlayers("§e" + playername + "§f hat die Spielewiese verlassen!");
     	if (pi.status == Playerstatus.Guest)
     		return;
     	pi.status = Playerstatus.Offline;
@@ -104,30 +106,51 @@ public class BungeeLogin extends Plugin  {
     	return pi;
     }
     
-    /** Public setter-method for players-HashMap  
-     * 
-     * @param player	key
-     * @param pi		value
-     */    
-    public void setPlayerHashMapValue(String player, PlayerInfo pi) {
-    	player = player.toLowerCase();
-    	this.players.put(player, pi);
-    }
-    
     public void sendBroadcastToAllPlayers(String message) {
     	for (PlayerInfo pi : this.players.values()){
     		ProxiedPlayer pp = this.getProxy().getPlayer(pi.playername);
-            if (pp != null) 
+            if (pp != null){
                 pp.sendMessage(new TextComponent(message));
-            else
-                BungeeLogin.instance.getLogger().info("Could not send broadcast-message to player " + pi.playername);
+            } else {
+            	this.onPlayerLeave(pi.playername);
+            }
     	}   
     }
     
-    public void senMessageToAll(String message){
-    	
+    public void kickGuests(TextComponent message){
+    	for (PlayerInfo pi : this.players.values()){
+    		if (pi.status == Playerstatus.Guest){
+    			this.getProxy().getPlayer(pi.playername).disconnect(message);
+    		}
+    	}
     }
-    
+}
+
+class BungeGuestWhitelistt extends Command{
+	private BungeeLogin plugin;
+	
+	public BungeGuestWhitelistt(BungeeLogin plugin) {
+	      super("guestwhitelist");
+	      this.plugin = plugin;
+	  }
+
+	@Override
+	public void execute(CommandSender sender, String[] args) {
+		if (!sender.hasPermission("bungeelogin.guestwhitelist")){
+			return;
+		}
+		if (args[0].toLowerCase().equals("off")){
+			Settings.areGuestsBlacklisted = false;
+			sender.sendMessage(new TextComponent("Gäste können nun joinen!"));
+			return;
+		}
+		if (args[0].toLowerCase().equals("on")){
+			Settings.areGuestsBlacklisted = true;
+			this.plugin.kickGuests(new TextComponent("Registriere dich bitte auf www.minecraft-spielewiese.de!"));
+			sender.sendMessage(new TextComponent("Gäste werden geblockt!"));
+			return;	
+		}
+	}
 }
 
 class BungeCheckTime extends Command{

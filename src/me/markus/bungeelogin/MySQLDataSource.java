@@ -55,17 +55,17 @@ public class MySQLDataSource {
 	}
 	
 	
-	public synchronized PlayerInfo getPlayerInfo(String user) {
+	public synchronized PlayerInfo getPlayerInfo(String playername) {
 		Connection con = null;
 		PreparedStatement pst = null;
 		ResultSet rs = null;
+		String lwcplayername = playername.toLowerCase();
 		try {
 			con = makeSureConnectionIsReady();
 			pst = con.prepareStatement("SELECT * FROM " + tableName + " WHERE lower(" + columnName + ")=?;");
-			pst.setString(1, user);
+			pst.setString(1, lwcplayername);
 			rs = pst.executeQuery();
 			if (rs.next()) {
-				String playername = rs.getString(columnName);
 				int playtime = rs.getInt(columnPlaytime);
 				Playerstatus status = Playerstatus.valueOf(rs.getString(columnLoginstatus));
 				return new PlayerInfo(playername,playtime,status);
@@ -103,10 +103,10 @@ public class MySQLDataSource {
 			pst = con.prepareStatement(statement);
 			pst.setString(1, playerinfo.status.toString());
 			pst.setInt(2, playerinfo.playtime);
-			pst.setString(3, playerinfo.playername);
+			pst.setString(3, playerinfo.playername.toLowerCase());
 			
 			boolean result = pst.execute();
-			BungeeLogin.instance.getLogger().info("Update sucessfull? "+result);
+			BungeeLogin.instance.getLogger().info("Update sucessful? "+result);
 		} catch (SQLException ex) {
 			BungeeLogin.instance.getLogger().severe(ex.getMessage());
 			return;

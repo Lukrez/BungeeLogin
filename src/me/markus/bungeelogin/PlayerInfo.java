@@ -10,7 +10,7 @@ public class PlayerInfo {
 	public GregorianCalendar joinedAt;
 	
 	public PlayerInfo(String playername,int playtime,Playerstatus status){
-		this.playername = playername;
+		this.playername = playername; // Playername with lower and upper Case
 		this.playtime = playtime;
 		this.status = status;
 		this.joinedAt = new GregorianCalendar();

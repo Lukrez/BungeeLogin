@@ -78,7 +78,6 @@ public class EventListeners implements Listener{
 	        
 	        PlayerInfo pi = BungeeLogin.instance.getPlayer(playername);     
 	        if (pi.status == Playerstatus.Unloggedin) {
-	        	//player.sendMessage(new TextComponent("Du musst dich einloggen um chatten oder Befehle eingeben zu können!"));
 	            BungeeLogin.instance.getLogger().info("cancel global chat from "+playername);
 	            event.setCancelled(true);
 	        }      
@@ -106,12 +105,13 @@ public class EventListeners implements Listener{
         	String message = in.readUTF();
         	if (!message.matches("#Playerlogin#.+#"))
         		return;
-    		String name = message.split("#")[2];
-    		
-        	// get playername
-        	String playername = message.split("#")[2];
-        	if (this.loginPlayer(playername)){
-        		BungeeLogin.instance.sendBroadcastToAllPlayers("§e" + name + "§f hat die Spielewiese betreten!");
+
+        	String lwcplayername = message.split("#")[2];
+        	PlayerInfo pi = BungeeLogin.instance.getPlayer(lwcplayername);
+        	// Verify if player is logged in via EasyLogin
+        	if (this.loginPlayer(lwcplayername)){
+        		// get playername
+        		BungeeLogin.instance.sendBroadcastToAllPlayers("§e" + pi.playername + "§f hat die Spielewiese betreten!");
         	}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -119,21 +119,20 @@ public class EventListeners implements Listener{
 		}
     }
     
-    private boolean loginPlayer(String playername){
+    private boolean loginPlayer(String lwcplayername){
     	/**
     	 *  Function called if a player has logged in, needs verification over SQL database (to prevent PluginChannel hacking)
     	 *  
     	 */
     	BungeeLogin plugin = BungeeLogin.instance;
-    	PlayerInfo unloggedinUser = plugin.getPlayer(playername);
+    	PlayerInfo unloggedinUser = plugin.getPlayer(lwcplayername);
     	if (unloggedinUser.status != Playerstatus.Unloggedin)
     		return false;
     	// get verification from database
-    	PlayerInfo checkPlayer = plugin.database.getPlayerInfo(playername.toLowerCase());
+    	PlayerInfo checkPlayer = plugin.database.getPlayerInfo(lwcplayername);
     	
     	if (checkPlayer.status == Playerstatus.Loggedin){
     		unloggedinUser.status = Playerstatus.Loggedin;
-    		plugin.setPlayerHashMapValue(playername, unloggedinUser);
     		return true;
     	}
     	return false;
