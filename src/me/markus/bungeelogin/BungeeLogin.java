@@ -1,5 +1,6 @@
 package me.markus.bungeelogin;
 
+import java.util.Date;
 import java.util.HashMap;
 
 import net.md_5.bungee.api.CommandSender;
@@ -14,6 +15,9 @@ public class BungeeLogin extends Plugin  {
 	private HashMap<String,PlayerInfo> players; // Keeps information about all current players on the server, Key is the lowercase playername
 	public static BungeeLogin instance;
 	public MySQLDataSource database;
+	public boolean spamBotAttack;
+	private int nrLogins;
+	private long lastLoginCycle;
 	
     @Override
     public void onEnable() {
@@ -30,7 +34,7 @@ public class BungeeLogin extends Plugin  {
     	
     	// link commands
     	this.getProxy().getPluginManager().registerCommand(this, new BungeCheckTime(this));
-    	this.getProxy().getPluginManager().registerCommand(this, new BungeGuestWhitelistt(this));
+    	this.getProxy().getPluginManager().registerCommand(this, new BungeGuestBlacklist(this));
     	
     	try {
     		database = new MySQLDataSource();
@@ -42,7 +46,13 @@ public class BungeeLogin extends Plugin  {
     	
     	// register Pluginchannel
     	this.getProxy().registerChannel("LoginFoo");
+    	this.getProxy().registerChannel("CommandBridge");
+//    	this.getProxy().registerChannel("SpamAttack");
+    	
     	this.players = new HashMap<String,PlayerInfo>();
+    	this.spamBotAttack = false;
+    	this.nrLogins = 0;
+    	this.lastLoginCycle = 0;
         getLogger().info("Finished setup!");
     	
     }
@@ -67,22 +77,31 @@ public class BungeeLogin extends Plugin  {
     }
     
     
-    public void onPlayerJoin(String playername){
+    public boolean onPlayerJoin(String playername){
     	
     	// Get playerinfo
     	String lwcplayername = playername.toLowerCase();
     	if (this.players.containsKey(lwcplayername)){
-    		return; // Double login handled by server
+    		return false; // Double login handled by server
     	}
     	PlayerInfo pi = database.getPlayerInfo(playername);
+    	
+    	checkSpamBotStatus();
     	if (pi == null){ // Guest
-    		pi = new PlayerInfo(playername,0,Playerstatus.Guest);
+    		this.nrLogins++; // TODO: Maybe move into Guest-Detection?
+    		if (Settings.areGuestsBlacklisted == true)
+    			return false;
+    		if (this.spamBotAttack == true) 
+    			return false;
     		this.sendBroadcastToAllPlayers("§f Der Gast §e" + playername + "§f hat die Spielewiese betreten!");
+    		pi = new PlayerInfo(playername,0,Playerstatus.Guest);
+    		
     	} else {
     		pi.status = Playerstatus.Unloggedin;
     		database.updatePlayerData(pi);
     	}
     	this.players.put(lwcplayername, pi);
+    	return true;
     }
     
     public void onPlayerLeave(String playername){
@@ -92,9 +111,13 @@ public class BungeeLogin extends Plugin  {
     	if (pi == null){
     		return;
     	}
-    	this.sendBroadcastToAllPlayers("§e" + playername + "§f hat die Spielewiese verlassen!");
-    	if (pi.status == Playerstatus.Guest)
+    	
+    	if (pi.status == Playerstatus.Guest){
+    		if (this.spamBotAttack == false) 
+    			this.sendBroadcastToAllPlayers("§e" + playername + "§f hat die Spielewiese verlassen!");
     		return;
+    	}
+    	this.sendBroadcastToAllPlayers("§e" + playername + "§f hat die Spielewiese verlassen!");
     	pi.status = Playerstatus.Offline;
     	// TODO: Set playertime
     	database.updatePlayerData(pi);
@@ -124,19 +147,41 @@ public class BungeeLogin extends Plugin  {
     		}
     	}
     }
+    
+	private void checkSpamBotStatus() {
+		if (Settings.getLoginsPerTenSeconds > 0 && this.nrLogins > Settings.getLoginsPerTenSeconds) {
+			this.nrLogins = 0;
+			this.lastLoginCycle = new Date().getTime();
+		}
+		boolean newValue = Settings.getLoginsPerTenSeconds > 0 && new Date().getTime() - this.lastLoginCycle < 10000;
+		// check if value changed
+		if (newValue != this.spamBotAttack){
+			if (newValue == true){
+				this.getLogger().info("Spambotattacke erkannt, leite Gegenmaßnahmen ein!");
+			} else {
+				this.getLogger().info("Spambotattacke hat aufgehört, stelle Gegenmaßnahmen ein!");
+			}
+		}
+		
+		this.spamBotAttack = newValue;
+	}
 }
 
-class BungeGuestWhitelistt extends Command{
+class BungeGuestBlacklist extends Command{
 	private BungeeLogin plugin;
 	
-	public BungeGuestWhitelistt(BungeeLogin plugin) {
-	      super("guestwhitelist");
+	public BungeGuestBlacklist(BungeeLogin plugin) {
+	      super("guestblacklist");
 	      this.plugin = plugin;
 	  }
 
 	@Override
 	public void execute(CommandSender sender, String[] args) {
 		if (!sender.hasPermission("bungeelogin.guestwhitelist")){
+			return;
+		}
+		if (args.length < 1) {
+			sender.sendMessage(new TextComponent("/guestblacklist ON|OFF"));
 			return;
 		}
 		if (args[0].toLowerCase().equals("off")){
@@ -152,6 +197,7 @@ class BungeGuestWhitelistt extends Command{
 		}
 	}
 }
+
 
 class BungeCheckTime extends Command{
 	private BungeeLogin plugin;

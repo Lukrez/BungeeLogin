@@ -22,6 +22,7 @@ public class Settings {
 	public static String getMySQLColumnLoginStatus;
 	public static String getMySQLColumnPlaytime;
 	public static boolean areGuestsBlacklisted;
+	public static int getLoginsPerTenSeconds;
 	
 
 	public static void loadSettings() {
@@ -38,6 +39,7 @@ public class Settings {
 		getMySQLColumnLoginStatus = "loginStatus";
 		getMySQLColumnPlaytime = "playtime";
 		areGuestsBlacklisted = false;
+		getLoginsPerTenSeconds = 20;
 
 		File file = new File(BungeeLogin.instance.getDataFolder(), "config.yml");
 		if (!file.exists())
@@ -58,6 +60,7 @@ public class Settings {
 			
 			isStopEnabled = yaml.getBoolean("Security.SQLProblem.stopServer");
 			areGuestsBlacklisted = yaml.getBoolean("Security.areGuestsBlacklisted");
+			getLoginsPerTenSeconds = yaml.getInt("Security.loginsPer10Seconds");
 
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
@@ -87,6 +90,7 @@ public class Settings {
 			
 			yaml.set("Security.SQLProblem.stopServer", isStopEnabled);
 			yaml.set("Security.areGuestsBlacklisted", areGuestsBlacklisted);
+			yaml.set("Security.loginsPer10Seconds", getLoginsPerTenSeconds);
 			
 			ConfigurationProvider.getProvider(YamlConfiguration.class).save(yaml, file);
 			

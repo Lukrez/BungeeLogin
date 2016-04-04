@@ -9,9 +9,9 @@ import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.connection.Server;
 import net.md_5.bungee.api.event.ChatEvent;
-import net.md_5.bungee.api.event.LoginEvent;
 import net.md_5.bungee.api.event.PlayerDisconnectEvent;
 import net.md_5.bungee.api.event.PluginMessageEvent;
+import net.md_5.bungee.api.event.PreLoginEvent;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
 
@@ -28,12 +28,14 @@ public class EventListeners implements Listener{
 	 */
 	
 	@EventHandler
-	public void onLogin(LoginEvent event){
-		
+	public void onLogin(PreLoginEvent event){
 		if (event.isCancelled())
 			return;
 		String playername = event.getConnection().getName();
-		BungeeLogin.instance.onPlayerJoin(playername);
+		if (!BungeeLogin.instance.onPlayerJoin(playername)) {
+			event.setCancelled(true);
+			event.setCancelReason("Der Server ist momentan überlastet, bitte versuche es später noch einmal!");
+		}
 	}
 	
 	@EventHandler
@@ -83,13 +85,43 @@ public class EventListeners implements Listener{
 	        }      
 	}
 	
-    
+	@EventHandler
+    public void onPluginMessagePlayerCommand(PluginMessageEvent ev) {   	
+        if (!ev.getTag().equals("CommandBridge")) {
+            return;
+        }
+        
+        if (!(ev.getSender() instanceof Server)) {
+            return;
+        }
+        
+        ByteArrayInputStream stream = new ByteArrayInputStream(ev.getData());
+        DataInputStream in = new DataInputStream(stream);
+        try {
+        	String message = in.readUTF();
+        	if (!message.matches("#foobar#.+#"))
+        		return;
+
+        	String playername = message.split("#")[2];
+        	ProxiedPlayer player = BungeeLogin.instance.getProxy().getPlayer(playername);
+        	if (player == null)
+        		return;
+        	player.sendMessage(new TextComponent("proxy - run command!"));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
     
     @EventHandler
-    public void onPluginMessage(PluginMessageEvent ev) {
+    public void onPluginMessagePlayerLogin(PluginMessageEvent ev) {
     	/**
     	 * PluginChannel, used to get a update from the server that a player has logged in
-    	 */   	
+    	 */
+    	
+    	if (ev.getTag().equals("CommandBridge")) {
+            return;
+        }
     	
         if (!ev.getTag().equals("LoginFoo")) {
             return;
@@ -118,6 +150,34 @@ public class EventListeners implements Listener{
 			e.printStackTrace();
 		}
     }
+    
+    
+//    @EventHandler
+//    public void onPluginMessageSpamAttack(PluginMessageEvent ev) {
+//    	/**
+//    	 * PluginChannel, used to get a update from the server that a player has logged in
+//    	 */   	
+//    	
+//        if (!ev.getTag().equals("SpamAttack")) {
+//            return;
+//        }
+//        
+//        if (!(ev.getSender() instanceof Server)) {
+//            return;
+//        }
+//        
+//        ByteArrayInputStream stream = new ByteArrayInputStream(ev.getData());
+//        DataInputStream in = new DataInputStream(stream);
+//        try {
+//        	String message = in.readUTF();
+//        	BungeeLogin.instance.spamAttack = Boolean.getBoolean(message);
+//        	BungeeLogin.instance.getLogger().info("Got Spambot-Attackvalue:" + BungeeLogin.instance.spamAttack);
+//		} catch (IOException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//    }
+    
     
     private boolean loginPlayer(String lwcplayername){
     	/**
