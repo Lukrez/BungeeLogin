@@ -85,43 +85,11 @@ public class EventListeners implements Listener{
 	        }      
 	}
 	
-	@EventHandler
-    public void onPluginMessagePlayerCommand(PluginMessageEvent ev) {   	
-        if (!ev.getTag().equals("CommandBridge")) {
-            return;
-        }
-        
-        if (!(ev.getSender() instanceof Server)) {
-            return;
-        }
-        
-        ByteArrayInputStream stream = new ByteArrayInputStream(ev.getData());
-        DataInputStream in = new DataInputStream(stream);
-        try {
-        	String message = in.readUTF();
-        	if (!message.matches("#foobar#.+#"))
-        		return;
-
-        	String playername = message.split("#")[2];
-        	ProxiedPlayer player = BungeeLogin.instance.getProxy().getPlayer(playername);
-        	if (player == null)
-        		return;
-        	player.sendMessage(new TextComponent("proxy - run command!"));
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-    
     @EventHandler
     public void onPluginMessagePlayerLogin(PluginMessageEvent ev) {
     	/**
     	 * PluginChannel, used to get a update from the server that a player has logged in
     	 */
-    	
-    	if (ev.getTag().equals("CommandBridge")) {
-            return;
-        }
     	
         if (!ev.getTag().equals("LoginFoo")) {
             return;
@@ -150,33 +118,6 @@ public class EventListeners implements Listener{
 			e.printStackTrace();
 		}
     }
-    
-    
-//    @EventHandler
-//    public void onPluginMessageSpamAttack(PluginMessageEvent ev) {
-//    	/**
-//    	 * PluginChannel, used to get a update from the server that a player has logged in
-//    	 */   	
-//    	
-//        if (!ev.getTag().equals("SpamAttack")) {
-//            return;
-//        }
-//        
-//        if (!(ev.getSender() instanceof Server)) {
-//            return;
-//        }
-//        
-//        ByteArrayInputStream stream = new ByteArrayInputStream(ev.getData());
-//        DataInputStream in = new DataInputStream(stream);
-//        try {
-//        	String message = in.readUTF();
-//        	BungeeLogin.instance.spamAttack = Boolean.getBoolean(message);
-//        	BungeeLogin.instance.getLogger().info("Got Spambot-Attackvalue:" + BungeeLogin.instance.spamAttack);
-//		} catch (IOException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//    }
     
     
     private boolean loginPlayer(String lwcplayername){

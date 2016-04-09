@@ -46,8 +46,6 @@ public class BungeeLogin extends Plugin  {
     	
     	// register Pluginchannel
     	this.getProxy().registerChannel("LoginFoo");
-    	this.getProxy().registerChannel("CommandBridge");
-//    	this.getProxy().registerChannel("SpamAttack");
     	
     	this.players = new HashMap<String,PlayerInfo>();
     	this.spamBotAttack = false;
