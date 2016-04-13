@@ -7,6 +7,7 @@ public class PlayerInfo {
 	public String playername;
 	public Playerstatus status;
 	public int playtime;
+	public boolean isRegistering;
 	public GregorianCalendar joinedAt;
 	
 	public PlayerInfo(String playername,int playtime,Playerstatus status){
@@ -14,6 +15,7 @@ public class PlayerInfo {
 		this.playtime = playtime;
 		this.status = status;
 		this.joinedAt = new GregorianCalendar();
+		this.isRegistering = false;
 	}
 	
 	public int calcPlayTime(){

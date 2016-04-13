@@ -44,8 +44,9 @@ public class BungeeLogin extends Plugin  {
 			this.shutdown();
 		}
     	
-    	// register Pluginchannel
+    	// register Pluginchannels
     	this.getProxy().registerChannel("LoginFoo");
+    	this.getProxy().registerChannel("Register");
     	
     	this.players = new HashMap<String,PlayerInfo>();
     	this.spamBotAttack = false;
@@ -115,7 +116,9 @@ public class BungeeLogin extends Plugin  {
     			this.sendBroadcastToAllPlayers("§e" + playername + "§f hat die Spielewiese verlassen!");
     		return;
     	}
-    	this.sendBroadcastToAllPlayers("§e" + playername + "§f hat die Spielewiese verlassen!");
+    	if (pi.status != Playerstatus.Unloggedin) {
+    		this.sendBroadcastToAllPlayers("§e" + playername + "§f hat die Spielewiese verlassen!");	
+    	}
     	pi.status = Playerstatus.Offline;
     	// TODO: Set playertime
     	database.updatePlayerData(pi);
@@ -129,11 +132,11 @@ public class BungeeLogin extends Plugin  {
     
     public void sendBroadcastToAllPlayers(String message) {
     	for (PlayerInfo pi : this.players.values()){
+    		if (pi.isRegistering == true)
+    			continue;
     		ProxiedPlayer pp = this.getProxy().getPlayer(pi.playername);
             if (pp != null){
                 pp.sendMessage(new TextComponent(message));
-            } else {
-            	this.onPlayerLeave(pi.playername);
             }
     	}   
     }
