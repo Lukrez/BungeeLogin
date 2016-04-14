@@ -80,9 +80,6 @@ public class BungeeLogin extends Plugin  {
     	
     	// Get playerinfo
     	String lwcplayername = playername.toLowerCase();
-    	if (this.players.containsKey(lwcplayername)){
-    		return false; // Double login handled by server
-    	}
     	PlayerInfo pi = database.getPlayerInfo(playername);
     	
     	checkSpamBotStatus();

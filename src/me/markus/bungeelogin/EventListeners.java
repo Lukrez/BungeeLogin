@@ -197,6 +197,10 @@ public class EventListeners implements Listener{
         		isRegistering = true;
         	} else if (message.matches("#exit#.+#")) {
         		isRegistering = false;
+        	} else if (message.matches("#login#.+#")) {
+        		String playername = message.split("#")[2];
+        		BungeeLogin.instance.onPlayerJoin(playername);
+        		return;
         	} else {
         		return;
         	}
