@@ -33,6 +33,14 @@ public class EventListeners implements Listener{
 		if (event.isCancelled())
 			return;
 		String playername = event.getConnection().getName();
+		
+		for (ProxiedPlayer player : BungeeLogin.instance.getProxy().getPlayers()) {
+			if (player.getName().equalsIgnoreCase(playername) && player.isConnected()) {
+				event.setCancelled(true);
+				event.setCancelReason("Ein Spieler mit diesem Namen ist bereits verbunden!");
+				return;
+			}
+		}
 		if (!BungeeLogin.instance.onPlayerJoin(playername)) {
 			event.setCancelled(true);
 			event.setCancelReason("Der Server ist momentan überlastet, bitte versuche es später noch einmal!");
