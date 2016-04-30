@@ -3,6 +3,8 @@ package me.markus.bungeelogin;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import net.md_5.bungee.config.Configuration;
 import net.md_5.bungee.config.ConfigurationProvider;
@@ -23,6 +25,7 @@ public class Settings {
 	public static String getMySQLColumnPlaytime;
 	public static boolean areGuestsBlacklisted;
 	public static int getLoginsPerTenSeconds;
+	public static List<String> getLobbyServer;
 	
 
 	public static void loadSettings() {
@@ -40,6 +43,9 @@ public class Settings {
 		getMySQLColumnPlaytime = "playtime";
 		areGuestsBlacklisted = false;
 		getLoginsPerTenSeconds = 20;
+		getLobbyServer = new ArrayList<String>();
+		getLobbyServer.add("lobby");
+		getLobbyServer.add("lobby2");
 
 		File file = new File(BungeeLogin.instance.getDataFolder(), "config.yml");
 		if (!file.exists())
@@ -61,6 +67,7 @@ public class Settings {
 			isStopEnabled = yaml.getBoolean("Security.SQLProblem.stopServer");
 			areGuestsBlacklisted = yaml.getBoolean("Security.areGuestsBlacklisted");
 			getLoginsPerTenSeconds = yaml.getInt("Security.loginsPer10Seconds");
+			getLobbyServer = yaml.getStringList("Lobbyserver");
 
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
@@ -91,6 +98,7 @@ public class Settings {
 			yaml.set("Security.SQLProblem.stopServer", isStopEnabled);
 			yaml.set("Security.areGuestsBlacklisted", areGuestsBlacklisted);
 			yaml.set("Security.loginsPer10Seconds", getLoginsPerTenSeconds);
+			yaml.set("Lobbyserver", getLobbyServer);
 			
 			ConfigurationProvider.getProvider(YamlConfiguration.class).save(yaml, file);
 			

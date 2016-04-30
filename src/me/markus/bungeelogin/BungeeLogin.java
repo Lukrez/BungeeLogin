@@ -35,6 +35,8 @@ public class BungeeLogin extends Plugin  {
     	// link commands
     	this.getProxy().getPluginManager().registerCommand(this, new BungeCheckTime(this));
     	this.getProxy().getPluginManager().registerCommand(this, new BungeGuestBlacklist(this));
+    	this.getProxy().getPluginManager().registerCommand(this, new LobbyConnect());
+    	
     	
     	try {
     		database = new MySQLDataSource();
@@ -254,5 +256,22 @@ class BungeCheckTime extends Command{
 		}
 		
 		sender.sendMessage(new TextComponent(s));
+	}
+}
+
+
+class LobbyConnect extends Command{
+	
+	public LobbyConnect() {
+	      super("lobby", null, new String[] {"hub"});
+	  }
+
+	@Override
+	public void execute(CommandSender sender, String[] args) {
+		if (!(sender instanceof ProxiedPlayer)) {
+			return;
+		}
+		ProxiedPlayer player = (ProxiedPlayer) sender;
+		player.connect(BungeeLogin.instance.getProxy().getServerInfo("lobby"));
 	}
 }

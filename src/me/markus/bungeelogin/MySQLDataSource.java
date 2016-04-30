@@ -1,7 +1,5 @@
 package me.markus.bungeelogin;
 
-import com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -9,6 +7,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import me.markus.bungeelogin.MiniConnectionPoolManager.TimeoutException;
+
+import com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource;
 
 public class MySQLDataSource {
 

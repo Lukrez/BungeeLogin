@@ -15,7 +15,6 @@
 package me.markus.bungeelogin;
 
 import java.io.UnsupportedEncodingException;
-
 import java.security.SecureRandom;
 
 /**

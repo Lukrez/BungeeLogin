@@ -48,8 +48,10 @@ public class EventListeners implements Listener{
 	public void onBungeeLoginServerConnectEvent(ServerConnectEvent event) {
 
 		// all players are allowed to join the lobby-server
-		if (event.getTarget().getName().equalsIgnoreCase("lobby"))
-			return;
+		for (String servername : Settings.getLobbyServer) {
+			if (event.getTarget().getName().equalsIgnoreCase(servername))
+				return;
+		}
 	
 		// get the playerinfo of the player
 		ProxiedPlayer player = event.getPlayer();
